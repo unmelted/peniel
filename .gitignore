@@ -7,3 +7,10 @@ frontend/src/assets/iconfonts/.DS_Store
 
 frontend/node_modules/
 frontend/package-lock.json
+
+
+# Backend
+backend/.DS_Store
+backend/node_modules/
+backend/node_modules/.package-lock.json
+backend/package-lock.json
