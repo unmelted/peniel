@@ -1,11 +1,10 @@
-import { FC, Fragment } from 'react';
-import { Link } from 'react-router-dom';
+import React, { FC } from 'react';
 import Pageheader from '../../../components/common/pageheader/pageheader';
 
 interface PersonalProps {}
 
 interface BlockProps {
-    icon: string;
+    icon: string; // 아이콘 클래스 이름을 문자열로 받습니다
     name: string;
     status: 'active' | 'inactive';
     section2Text: string;
@@ -24,7 +23,7 @@ const Block: FC<BlockProps> = ({ icon, name, status, section2Text, section3Text 
                         {/* First Section */}
                         <div className="p-2 flex items-center justify-between">
                             <span className="block font-semibold text-[0.9375rem] flex items-center">
-                                <i className={`mr-2 ${icon}`}></i>
+                                <i className={`mr-2 ${icon}`}></i> {/* 아이콘 사용 */}
                                 {name}
                             </span>
                         </div>
@@ -45,20 +44,20 @@ const Block: FC<BlockProps> = ({ icon, name, status, section2Text, section3Text 
 
 const Personal: FC<PersonalProps> = () => {
     return (
-        <Fragment>
+        <React.Fragment>
             <Pageheader currentpage="Personal" activepage="Dashboards" mainpage="Personal" />
             <div className="grid grid-cols-12 gap-6">
                 {/* First row */}
-                <Block icon="fas fa-user" name="Block 1" status="active" section2Text="Active Status" section3Text="Additional Info 1" />
-                <Block icon="fas fa-user" name="Block 2" status="active" section2Text="Active Status" section3Text="Additional Info 2" />
-                <Block icon="fas fa-user" name="Block 3 (Disabled)" status="inactive" section2Text="Inactive Status" section3Text="Additional Info 3" />
-                <Block icon="fas fa-user" name="Block 4 (Disabled)" status="inactive" section2Text="Inactive Status" section3Text="Additional Info 4" />
+                <Block icon="ti ti-user" name="Block 1" status="active" section2Text="Active Status" section3Text="Additional Info 1" />
+                <Block icon="ti ti-user" name="Block 2" status="active" section2Text="Active Status" section3Text="Additional Info 2" />
+                <Block icon="ti ti-user" name="Block 3 (Disabled)" status="inactive" section2Text="Inactive Status" section3Text="Additional Info 3" />
+                <Block icon="ti ti-user" name="Block 4 (Disabled)" status="inactive" section2Text="Inactive Status" section3Text="Additional Info 4" />
 
                 {/* Second row */}
-                <Block icon="fas fa-user" name="Block 5" status="active" section2Text="Active Status" section3Text="Additional Info 5" />
-                <Block icon="fas fa-user" name="Block 6" status="active" section2Text="Active Status" section3Text="Additional Info 6" />
-                <Block icon="fas fa-user" name="Block 7" status="active" section2Text="Active Status" section3Text="Additional Info 7" />
-                <Block icon="fas fa-user" name="Block 8" status="active" section2Text="Active Status" section3Text="Additional Info 8" />
+                <Block icon="ti ti-user" name="Block 5" status="active" section2Text="Active Status" section3Text="Additional Info 5" />
+                <Block icon="ti ti-user" name="Block 6" status="active" section2Text="Active Status" section3Text="Additional Info 6" />
+                <Block icon="ti ti-user" name="Block 7" status="active" section2Text="Active Status" section3Text="Additional Info 7" />
+                <Block icon="ti ti-user" name="Block 8" status="active" section2Text="Active Status" section3Text="Additional Info 8" />
 
                 {/* Log Table */}
                 <div className="col-span-12">
@@ -76,7 +75,7 @@ const Personal: FC<PersonalProps> = () => {
                     </div>
                 </div>
             </div>
-        </Fragment>
+        </React.Fragment>
     );
 }
 
