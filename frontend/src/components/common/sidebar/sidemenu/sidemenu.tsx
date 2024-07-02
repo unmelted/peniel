@@ -15,7 +15,7 @@ export const MENUITEMS = [
         badgetxt: '',
         class: 'badge !bg-warning/10 !text-warning !py-[0.25rem] !px-[0.45rem] !text-[0.75em] ms-2',
         children: [
-          { path: `${import.meta.env.BASE_URL}dashboards/personal`, type: 'link', active: false, selected: false, title: 'IMS' }
+          { path: `${import.meta.env.BASE_URL}dashboards/stark`, type: 'link', active: false, selected: false, title: 'IMS' }
         ]
       },
 ];
