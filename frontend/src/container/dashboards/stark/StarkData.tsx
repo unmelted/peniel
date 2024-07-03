@@ -7,3 +7,5 @@ export interface RobotProps {
     section2Text: string;
     section3Text: string;
 }
+
+export const robotData: RobotProps[] = [];
