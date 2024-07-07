@@ -5,8 +5,8 @@ import RobotList from './RobotList.tsx';
 const Stark: FC = () => {
     return (
         <React.Fragment>
-            <Pageheader currentpage="Robots" activepage="Dashboards" mainpage="Robots" />
-            <RobotList />
+            <Pageheader currentpage="Robots" activepage="Dashboards" mainpage="Robots"/>
+            <RobotList/>
         </React.Fragment>
     );
 }

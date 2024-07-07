@@ -2,6 +2,9 @@ import React, { FC, useState, useEffect } from 'react';
 import { RobotProps } from './StarkData.tsx';
 import userRobot from '../../../assets/images/custom/user-robot.png';
 import userRobotX from '../../../assets/images/custom/user-robot-x.png';
+import LogTable, {EventLog} from './LogTable';
+
+import {ResponsiveDataTable} from "./LogTable.tsx";
 
 const Block: FC<RobotProps> = ({ name, status, section2Text, section3Text }) => {
     const bgColor = status === 'active' ? 'bg-green-500' : 'bg-gray-900';
@@ -39,6 +42,7 @@ const Block: FC<RobotProps> = ({ name, status, section2Text, section3Text }) => 
 
 const RobotList: FC = () => {
     const [robots, setRobots] = useState<RobotProps[]>([]);
+    const [logs, setLogs] = useState([]);
 
     useEffect(() => {
         // 초기 데이터 가져오기
@@ -51,8 +55,12 @@ const RobotList: FC = () => {
         const ws = new WebSocket('ws://localhost:3000');
 
         ws.onmessage = (event) => {
-            const newRobot = JSON.parse(event.data);
-            setRobots(prevRobots => [...prevRobots, newRobot]);
+            const message = JSON.parse(event.data);
+            if (message.type === 'robot') {
+                setRobots(prevRobots => [...prevRobots, message.data]);
+            } else if (message.type === 'log') {
+                setLogs(prevLogs => [...prevLogs, message.data]);
+            }
         };
 
         ws.onclose = () => {
@@ -66,21 +74,38 @@ const RobotList: FC = () => {
 
     return (
         <div className="grid grid-cols-12 gap-6">
-            {robots.map((robot, index) => (
-                <Block key={index} {...robot} />
-            ))}
+            {robots.length > 0 ? (
+                robots.map((robot, index) => (
+                    <Block key={index} {...robot} />
+                ))
+            ) : (
+                <div className="col-span-3">
+                    <div className="box overflow-hidden h-48">
+                        <div className="box-body !p-0 h-full">
+                            <div className="h-full flex flex-col justify-center items-center">
+                                <span className="block font-semibold text-[0.9375rem] text-gray-500">Waiting..zzz</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Log Table */}
             <div className="col-span-12">
-                <div className="box overflow-hidden">
-                    <div className="box-body !p-0">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between">
-                                <div className="mb-4">
-                                    <span className="block font-semibold text-[0.9375rem]">Log Table</span>
+                <div className="grid grid-cols-12 gap-6">
+                    <div className="col-span-12">
+                        <div className="box">
+                            <div className="box-header">
+                                <h5 className="box-title">EventLog</h5>
+                            </div>
+                            <div className="box-body space-y-3">
+                                <div className="overflow-hidden">
+                                    <div id="reactivity-table"
+                                         className="ti-custom-table ti-striped-table ti-custom-table-hover">
+                                        <EventLog/>
+                                    </div>
                                 </div>
                             </div>
-                            {/* Add your log table component here */}
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './pages/App.tsx'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
-import Stark from './container/dashboards/stark/stark.tsx'
+import Stark from './container/dashboards/stark/Stark.tsx'
 import './index.scss'
 
 

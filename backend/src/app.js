@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const tcpServer = require('./service/tcpService');
+const TcpClient = require('./service/tcpService');
 const robotRoutes = require('./routes/robotRoutes');
 const logRoutes = require('./routes/logRoutes');
 const notifyRoutes = require('./routes/notifyRoutes');
@@ -20,9 +20,10 @@ app.listen(WEB_PORT, () => {
     console.log(`Server is running on http://localhost:${WEB_PORT}`);
 });
 
+const TCP_HOST = process.env.TCP_HOST
 const TCP_PORT = process.env.TCP_PORT;
-tcpServer.listen(TCP_PORT, () => {
-    console.log(`TCP Server listening on port ${TCP_PORT}`);
+TcpClient.connect(TCP_HOST, TCP_PORT, () => {
+    console.log(`TCP Server ${TCP_HOST}:${TCP_PORT}.`);
 });
 
 module.exports = app;
