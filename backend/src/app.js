@@ -22,8 +22,13 @@ app.listen(WEB_PORT, () => {
 
 const TCP_HOST = process.env.TCP_HOST
 const TCP_PORT = process.env.TCP_PORT;
-TcpClient.connect(TCP_HOST, TCP_PORT, () => {
-    console.log(`TCP Server ${TCP_HOST}:${TCP_PORT}.`);
-});
-
+TcpClient.connect(TCP_HOST, TCP_PORT)
+    .then(() => {
+        console.log('연결이 성공적으로 완료되었습니다.');
+        // 연결 후 보낼 메시지 예시
+        TcpClient.send('Type,Command,SubCommand,Action,Token,From,To,Data');
+    })
+    .catch((error) => {
+        console.error('연결 중 오류가 발생했습니다:', error);
+    });
 module.exports = app;
