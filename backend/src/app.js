@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const TcpClient = require('./service/tcpService');
+const {Configurator, MsgSender, TcpClient } = require('./service/tcpService');
 const robotRoutes = require('./routes/robotRoutes');
 const logRoutes = require('./routes/logRoutes');
 const notifyRoutes = require('./routes/notifyRoutes');
@@ -24,11 +24,24 @@ const TCP_HOST = process.env.TCP_HOST
 const TCP_PORT = process.env.TCP_PORT;
 TcpClient.connect(TCP_HOST, TCP_PORT)
     .then(() => {
-        console.log('연결이 성공적으로 완료되었습니다.');
-        // 연결 후 보낼 메시지 예시
-        TcpClient.send('Type,Command,SubCommand,Action,Token,From,To,Data');
+        console.log('connection is established');
+
+        const configurator = Configurator.get();
+        const e_msg = {
+            Type: 'RESPONSE',
+            Command: 'WHOAMI',
+            Token: configurator.generateToken(),
+            From: configurator.getName(),
+            To: 'IMS', // info.name에 해당하는 값
+            Data: configurator.getName()
+        };
+
+        // 메시지 전송
+        const msgSender = new MsgSender(TcpClient);
+        msgSender.parseAndSend(e_msg);
+
     })
     .catch((error) => {
-        console.error('연결 중 오류가 발생했습니다:', error);
+        console.error('error is ocurred during connection:', error);
     });
 module.exports = app;

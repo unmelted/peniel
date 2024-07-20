@@ -1,5 +1,45 @@
 const net = require('net');
 
+class Configurator {
+    static get() {
+        return new Configurator();
+    }
+
+    generateToken() {
+        return '20240721-0039';
+    }
+
+    getName() {
+        return 'PANIEL_BACKEND';
+    }
+}
+
+class MsgSender {
+    constructor(tcpClient) {
+        this.tcpClient = tcpClient;
+    }
+
+    parseAndSend(e_msg) {
+        const message = JSON.stringify(e_msg);
+        const messageBuffer = Buffer.from(message, 'utf8');
+        const messageSize = messageBuffer.length;
+
+        const sizeBuffer = Buffer.alloc(4);
+        sizeBuffer.writeInt32LE(messageSize);
+
+        const typeBuffer = Buffer.from([0x01]); // Assuming PACKETTYPE_JSON is 0x01
+
+        const totalSize = 4 + 1 + messageSize; // size (4 bytes) + type (1 byte) + message
+        const finalBuffer = Buffer.alloc(totalSize);
+
+        sizeBuffer.copy(finalBuffer, 0);
+        typeBuffer.copy(finalBuffer, 4);
+        messageBuffer.copy(finalBuffer, 5);
+
+        this.tcpClient.send(finalBuffer);
+    }
+}
+
 const TcpClient = {
     socket: null,
     isConnected: false,
@@ -80,11 +120,16 @@ const TcpClient = {
 
     send: function(message) {
         if (!this.isConnected) {
-            console.error('서버에 연결되어 있지 않습니다.');
+            console.error('connection is not established.');
             return;
         }
+        console.log('Sending raw data: ', message);
         this.socket.write(message);
     }
 };
 
-module.exports = TcpClient;
+module.exports = {
+    Configurator,
+    MsgSender,
+    TcpClient
+};
