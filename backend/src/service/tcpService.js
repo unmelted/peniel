@@ -68,11 +68,11 @@ const TcpClient = {
                 });
 
                 this.socket.on('data', (data) => {
-                    const message = data.toString();
+                    const message = data.toString('utf8');
                     console.log('received data :', message);
 
                     try {
-                        const parsedMessage = this.parseMessage(message);
+                        const parsedMessage = this.parseMessage(data);
                         console.log('parsed message:', JSON.stringify(parsedMessage, null, 2));
                     } catch (error) {
                         console.error('parsing error :', error);
@@ -105,17 +105,13 @@ const TcpClient = {
     },
 
     parseMessage: function(message) {
-        const [Type, Command, SubCommand, Action, Token, From, To, Data] = message.split(',');
-        return {
-            Type,
-            Command,
-            SubCommand,
-            Action,
-            Token,
-            From,
-            To,
-            Data
-        };
+        try {
+            const jsonString = message.slice(5).toString('utf8');
+            const parsedData = JSON.parse(jsonString);
+            return parsedData;
+        } catch (error) {
+            throw new Error('Failed to parse message: ' + error.message);
+        }
     },
 
     send: function(message) {
