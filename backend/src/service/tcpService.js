@@ -1,4 +1,8 @@
 const net = require('net');
+const DataProcessor = require('./DataProcessor');
+const {processFromSocket, process} = require("./dataProcessor");
+
+const dataProcessor = new DataProcessor();
 
 class Configurator {
     static get() {
@@ -74,6 +78,7 @@ const TcpClient = {
                     try {
                         const parsedMessage = this.parseMessage(data);
                         console.log('parsed message:', JSON.stringify(parsedMessage, null, 2));
+                        dataProcessor.process(parsedMessage);
                     } catch (error) {
                         console.error('parsing error :', error);
                     }
@@ -82,6 +87,7 @@ const TcpClient = {
                 this.socket.on('close', () => {
                     if (!this.retrying) {
                         console.log('server connection is closed');
+                        dataProcessor.processFromSocket('SOCKET_DISABLE');
                     }
                     else {
                         console.log('retrying to connect');

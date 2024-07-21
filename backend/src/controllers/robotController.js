@@ -1,4 +1,4 @@
-const Robot = require('../models/robotModel');
+const Robot = require('../models/robotData');
 
 exports.getAllRobots = (req, res) => {
     Robot.getAllRobots((robots) => {
