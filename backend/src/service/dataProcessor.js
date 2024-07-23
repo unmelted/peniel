@@ -47,7 +47,7 @@ class DataProcessor {
 
         const e_msg = {
             Type: 'REQUEST',
-            Command: 'REQUEST_INIT_INFO',
+            Command: 'REQUEST_INFO',
             Token: Configurator.generateToken(),
             From: Configurator.getName(),
             To: 'IMS', // info.name에 해당하는 값

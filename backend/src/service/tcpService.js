@@ -25,7 +25,7 @@ class MsgSender {
         const sizeBuffer = Buffer.alloc(4);
         sizeBuffer.writeInt32LE(messageSize);
 
-        const typeBuffer = Buffer.from([0x01]); // Assuming PACKETTYPE_JSON is 0x01
+        const typeBuffer = Buffer.from([0x00]); // Assuming PACKETTYPE_JSON is 0x01
         const totalSize = 4 + 1 + messageSize; // size (4 bytes) + type (1 byte) + message
         const finalBuffer = Buffer.alloc(totalSize);
 
