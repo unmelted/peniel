@@ -1,26 +1,20 @@
-const net = require('net');
-const DataProcessor = require('./DataProcessor');
-const {processFromSocket, process} = require("./dataProcessor");
 
-const dataProcessor = new DataProcessor();
+const net = require('net');
 
 class Configurator {
-    static get() {
-        return new Configurator();
-    }
-
-    generateToken() {
+    static generateToken() {
         return '20240721-0039';
     }
 
-    getName() {
+    static getName() {
         return 'PANIEL_BACKEND';
     }
 }
 
 class MsgSender {
-    constructor(tcpClient) {
-        this.tcpClient = tcpClient;
+    constructor(client) {
+        this.client = client;
+        console.log(`Client: ${this.client}, IsConnected: ${this.client ? this.client.isConnected : 'undefined'}`);
     }
 
     parseAndSend(e_msg) {
@@ -32,7 +26,6 @@ class MsgSender {
         sizeBuffer.writeInt32LE(messageSize);
 
         const typeBuffer = Buffer.from([0x01]); // Assuming PACKETTYPE_JSON is 0x01
-
         const totalSize = 4 + 1 + messageSize; // size (4 bytes) + type (1 byte) + message
         const finalBuffer = Buffer.alloc(totalSize);
 
@@ -40,65 +33,80 @@ class MsgSender {
         typeBuffer.copy(finalBuffer, 4);
         messageBuffer.copy(finalBuffer, 5);
 
-        this.tcpClient.send(finalBuffer);
+
+        if (this.client && this.client.isConnected) {
+            this.client.send(finalBuffer);
+        } else {
+            console.error('Client is not connected');
+        }
     }
 }
 
-const TcpClient = {
-    socket: null,
-    isConnected: false,
-    retryInterval: 5000, // 5초 후 재시도
-    retrying: false,
+class TcpClient {
+    constructor() {
+        this.socket = null;
+        this.isConnected = false;
+        this.retryInterval = 5000; // 5초 후 재시도
+        this.retrying = false;
+        this.dataProcessor = null; // DataProcessor 인스턴스를 나중에 설정
+    }
 
-    connect: function(ip, port) {
+    connect(ip, port, dataProcessor) {
+        this.dataProcessor = dataProcessor;
         return new Promise((resolve, reject) => {
             const attemptConnection = () => {
                 if (this.isConnected) {
-                    console.log('connection is already established.');
+                    console.log('Connection is already established.');
                     return resolve();
                 }
 
                 if (!this.retrying) {
-                    console.log(`trying to connect .. ${ip}:${port}`);
+                    console.log(`Trying to connect... ${ip}:${port}`);
                 }
 
                 this.socket = new net.Socket();
 
                 this.socket.connect(port, ip, () => {
-                    console.log(`connected . ${ip}:${port} .`);
+                    console.log(`Connected to ${ip}:${port}.`);
                     this.isConnected = true;
                     this.retrying = false;
+                    console.log('isConnected :', this.isConnected);
+
                     resolve();
                 });
 
                 this.socket.on('data', (data) => {
                     const message = data.toString('utf8');
-                    console.log('received data :', message);
+                    console.log('Received data:', message);
 
                     try {
                         const parsedMessage = this.parseMessage(data);
-                        console.log('parsed message:', JSON.stringify(parsedMessage, null, 2));
-                        dataProcessor.process(parsedMessage);
+                        if (this.dataProcessor) {
+                            this.dataProcessor.process(parsedMessage);
+                        } else {
+                            console.error('DataProcessor is not set.');
+                        }
                     } catch (error) {
-                        console.error('parsing error :', error);
+                        console.error('Parsing error:', error);
                     }
                 });
 
                 this.socket.on('close', () => {
                     if (!this.retrying) {
-                        console.log('server connection is closed');
-                        dataProcessor.processFromSocket('SOCKET_DISABLE');
-                    }
-                    else {
-                        console.log('retrying to connect');
+                        console.log('Server connection is closed');
+                        if (this.dataProcessor) {
+                            this.dataProcessor.processFromSocket('SOCKET_DISABLE');
+                        }
+                    } else {
+                        console.log('Retrying to connect');
                     }
                     this.isConnected = false;
                 });
 
                 this.socket.on('error', (error) => {
                     if (!this.retrying) {
-                        console.error('connection error :', error);
-                        console.log('connection is finished');
+                        console.error('Connection error:', error);
+                        console.log('Connection is finished');
                     }
                     this.isConnected = false;
                     this.retrying = true;
@@ -108,9 +116,9 @@ const TcpClient = {
 
             attemptConnection();
         });
-    },
+    }
 
-    parseMessage: function(message) {
+    parseMessage(message) {
         try {
             const jsonString = message.slice(5).toString('utf8');
             const parsedData = JSON.parse(jsonString);
@@ -118,20 +126,16 @@ const TcpClient = {
         } catch (error) {
             throw new Error('Failed to parse message: ' + error.message);
         }
-    },
+    }
 
-    send: function(message) {
+    send(message) {
         if (!this.isConnected) {
-            console.error('connection is not established.');
+            console.error('Connection is not established.');
             return;
         }
-        console.log('Sending raw data: ', message);
+        console.log('Sending raw data:', message);
         this.socket.write(message);
     }
-};
+}
 
-module.exports = {
-    Configurator,
-    MsgSender,
-    TcpClient
-};
+module.exports = { Configurator, MsgSender, TcpClient };
