@@ -47,8 +47,10 @@ class TcpClient {
         this.socket = null;
         this.isConnected = false;
         this.retryInterval = 5000; // 5초 후 재시도
+        this.dataProcessor = null;
         this.retrying = false;
-        this.dataProcessor = null; // DataProcessor 인스턴스를 나중에 설정
+        this.retryTimeout = null;
+        this.isTryingToConnect = false;
     }
 
     connect(ip, port, dataProcessor) {
@@ -59,6 +61,12 @@ class TcpClient {
                     console.log('Connection is already established.');
                     return resolve();
                 }
+                if (this.isTryingToConnect) {
+                    console.log('Already trying to connect. Please wait.');
+                    return;
+                }
+
+                this.isTryingToConnect = true;
 
                 if (!this.retrying) {
                     console.log(`Trying to connect... ${ip}:${port}`);
@@ -70,7 +78,26 @@ class TcpClient {
                     console.log(`Connected to ${ip}:${port}.`);
                     this.isConnected = true;
                     this.retrying = false;
+                    this.isTryingToConnect = false;
                     console.log('isConnected :', this.isConnected);
+
+                    if (this.retryTimeout) {
+                        clearTimeout(this.retryTimeout);
+                        this.retryTimeout = null;
+                    }
+
+                    const e_msg = {
+                        Type: 'RESPONSE',
+                        Command: 'WHOAMI',
+                        Token: Configurator.generateToken(),
+                        From: Configurator.getName(),
+                        To: 'IMS', // info.name에 해당하는 값
+                        Data: Configurator.getName()
+                    };
+
+                    // 메시지 전송
+                    const msgSender = new MsgSender(this);
+                    msgSender.parseAndSend(e_msg);
 
                     resolve();
                 });
@@ -95,12 +122,15 @@ class TcpClient {
                     if (!this.retrying) {
                         console.log('Server connection is closed');
                         if (this.dataProcessor) {
-                            this.dataProcessor.processFromSocket('SOCKET_DISABLE');
+                            this.dataProcessor.processFromSocket();
                         }
                     } else {
                         console.log('Retrying to connect');
                     }
                     this.isConnected = false;
+                    this.retrying = true;
+                    this.isTryingToConnect = false;
+                    this.retryTimeout = setTimeout(attemptConnection, this.retryInterval);
                 });
 
                 this.socket.on('error', (error) => {
@@ -110,7 +140,8 @@ class TcpClient {
                     }
                     this.isConnected = false;
                     this.retrying = true;
-                    setTimeout(attemptConnection, this.retryInterval); // 재시도
+                    this.isTryingToConnect = false;
+                    this.retryTimeout = setTimeout(attemptConnection, this.retryInterval);
                 });
             };
 

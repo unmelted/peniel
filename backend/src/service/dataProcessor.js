@@ -74,8 +74,8 @@ class DataProcessor {
         msgSender.parseAndSend(e_msg);
     }
 
-    disableSocket(parsedMessage) {
-        console.log('Enabling socket with data:', parsedMessage);
+    disableSocket() {
+        console.log('socket is disabled');
         this.connection.ims_connected = false;
     }
 

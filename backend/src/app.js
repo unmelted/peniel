@@ -31,20 +31,6 @@ const dataProcessor = new DataProcessor(tcpClient);
 tcpClient.connect(TCP_HOST, TCP_PORT, dataProcessor)
     .then(() => {
         console.log('Connection is established');
-
-        const e_msg = {
-            Type: 'RESPONSE',
-            Command: 'WHOAMI',
-            Token: Configurator.generateToken(),
-            From: Configurator.getName(),
-            To: 'IMS', // info.name에 해당하는 값
-            Data: Configurator.getName()
-        };
-
-        // 메시지 전송
-        const msgSender = new MsgSender(tcpClient);
-        msgSender.parseAndSend(e_msg);
-
     })
     .catch((error) => {
         console.error('Error occurred during connection:', error);
