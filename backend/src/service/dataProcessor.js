@@ -16,12 +16,14 @@ class DataProcessor {
                 this.enableSocket(parsedMessage);
                 break;
             case 'REPORT_SVC_INFO':
+                const robot_data = JSON.parse(parsedMessage.Data);
                 break;
             case 'NOTIFY':
                 break;
             case 'EVENT_EMERGENCY':
                 break;
             case 'REQUEST_INIT_INFO':
+                this.addRobot(parsedMessage.From, parsedMessage.Data);
                 break;
             default:
                 console.log('uncategorized command:', parsedMessage.Type);
@@ -62,6 +64,17 @@ class DataProcessor {
     disableSocket(parsedMessage) {
         console.log('Enabling socket with data:', parsedMessage);
         this.connection.ims_connected = false;
+    }
+
+    addRobot(from, data) {
+        const pData = JSON.parse(data);
+        console.log("arm count : ", pData["arm_count"]);
+        const robot = new Robot(from, pData["Version"]);
+        for (let i = 0; i < pData["arm_count"]; i++) {
+            robot.addArm(new RobotArm());
+        }
+
+        this.robots.set(from, robot);
     }
 }
 
