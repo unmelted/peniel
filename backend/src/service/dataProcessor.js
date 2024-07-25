@@ -1,6 +1,7 @@
 
 const { Robot, RobotArm, Connection } = require('../models/robotData');
 const {Configurator, MsgSender, TcpClient} = require("./tcpService");
+const sendToWeb = require('./webSocket');
 
 class DataProcessor {
     constructor(tcpClient) {
@@ -15,21 +16,33 @@ class DataProcessor {
             case 'SOCKET_ENABLE':
                 this.enableSocket(parsedMessage);
                 break;
+
             case 'REPORT_SVC_INFO':
                 const robot_data = JSON.parse(parsedMessage.Data);
+                const robot_name = parsedMessage.From;
+                const robot = this.robots.get(robot_name);
+                robot.updateRobotArms(robot_data);
                 break;
-            case 'NOTIFY':
-                break;
-            case 'EVENT_EMERGENCY':
-                break;
+
             case 'REQUEST_INIT_INFO':
                 this.addRobot(parsedMessage.From, parsedMessage.Data);
                 break;
+
+            case 'REQUEST_INFO':
+                break;
+
+            case 'NOTIFY':
+            case 'EVENT_EMERGENCY':
+            case 'WHOAMI':
+                // bypass to web
+                parsedMessage.Type = "EVENT_LOG"
+                this.sendToFrontend(parsedMessage);
+                break;
+
             default:
                 console.log('uncategorized command:', parsedMessage.Type);
                 console.log('uncategorized command:', parsedMessage.Command);
                 console.log('uncategorized command:', parsedMessage.From);
-                console.log('uncategorized command:', parsedMessage.To);
                 console.log('uncategorized command:', parsedMessage.Data);
         }
     }
@@ -52,7 +65,7 @@ class DataProcessor {
             Command: 'REQUEST_INFO',
             Token: Configurator.generateToken(),
             From: Configurator.getName(),
-            To: 'IMS', // info.name에 해당하는 값
+            To: 'IMS',
             Data: Configurator.getName()
         };
 
@@ -75,6 +88,9 @@ class DataProcessor {
         }
 
         this.robots.set(from, robot);
+    }
+    updateRobot(from, data) {
+
     }
 }
 

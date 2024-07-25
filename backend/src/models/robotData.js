@@ -16,7 +16,32 @@ class RobotArm {
         this.instrument_type = -1;
         this.instrument_usage_count = -1;
         this.instrument_scaled_grip = -1;
-        this.tool_orientation = -1;
+        this.tool_orientation_x = -1;
+        this.tool_orientation_y = -1;
+        this.tool_orientation_z = -1;
+        this.tool_orientation_w = -1;
+    }
+
+    updateRobotArm(arm_index, message) {
+        const prefix = `${arm_index}:`;
+        this.status = message[`${prefix}status`] ?? this.status;
+        this.is_able_to_track = message[`${prefix}is_able_to_track`] ?? this.is_able_to_track;
+        this.hits_joint_limit = message[`${prefix}hits_joint_limit`] ?? this.hits_joint_limit;
+        this.azimuth = message[`${prefix}azimuth`] ?? this.azimuth;
+        this.setup_pitch = message[`${prefix}setup_pitch`] ?? this.setup_pitch;
+        this.drape_attached = message[`${prefix}drape_attached`] ?? this.drape_attached;
+        this.trocar_attached = message[`${prefix}trocar_attached`] ?? this.trocar_attached;
+        this.trocar_type = message[`${prefix}trocar_type`] ?? this.trocar_type;
+        this.camera_attached = message[`${prefix}camera_attached`] ?? this.camera_attached;
+        this.camera_lens_tilt_angle = message[`${prefix}camera_lens_tilt_angle`] ?? this.camera_lens_tilt_angle;
+        this.instrument_attached = message[`${prefix}instrument_attached`] ?? this.instrument_attached;
+        this.instrument_type = message[`${prefix}instrument_type`] ?? this.instrument_type;
+        this.instrument_usage_count = message[`${prefix}instrument_usage_count`] ?? this.instrument_usage_count;
+        this.instrument_scaled_grip = message[`${prefix}instrument_scaled_grip`] ?? this.instrument_scaled_grip;
+        this.tool_orientation_x = message[`${prefix}tool_orientation_x`] ?? this.tool_orientation_x;
+        this.tool_orientation_y = message[`${prefix}tool_orientation_y`] ?? this.tool_orientation_y;
+        this.tool_orientation_z = message[`${prefix}tool_orientation_z`] ?? this.tool_orientation_z;
+        this.tool_orientation_w = message[`${prefix}tool_orientation_w`] ?? this.tool_orientation_w;
     }
 }
 
@@ -39,6 +64,16 @@ class Robot {
 
     getArmCount() {
         return this.arms.length;
+    }
+
+    updateRobotArms(message) {
+        for (let arm_index = 0; arm_index < this.arms.length; arm_index++) {
+
+            if (!this.arms[arm_index]) {
+                this.arms[arm_index] = new RobotArm();
+            }
+            this.arms[arm_index].updateRobotArm(arm_index, message);
+        }
     }
 }
 
