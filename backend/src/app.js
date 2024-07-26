@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const {Configurator, MsgSender, TcpClient } = require('./service/tcpService');
 const DataProcessor = require('./service/dataProcessor');
+const { wss } = require('./service/websocket');
 const robotRoutes = require('./routes/robotRoutes');
 const logRoutes = require('./routes/logRoutes');
 const notifyRoutes = require('./routes/notifyRoutes');
@@ -26,7 +27,7 @@ const TCP_HOST = process.env.TCP_HOST;
 const TCP_PORT = process.env.TCP_PORT;
 
 const tcpClient = new TcpClient();
-const dataProcessor = new DataProcessor(tcpClient);
+const dataProcessor = new DataProcessor(tcpClient, wss);
 
 tcpClient.connect(TCP_HOST, TCP_PORT, dataProcessor)
     .then(() => {

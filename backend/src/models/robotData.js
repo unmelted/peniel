@@ -22,8 +22,8 @@ class RobotArm {
         this.tool_orientation_w = -1;
     }
 
-    updateRobotArm(arm_index, message) {
-        const prefix = `${arm_index}:`;
+    updateRobotArm(robot_name, arm_index, message) {
+        const prefix = `${robot_name}:${arm_index}:`;
         this.status = message[`${prefix}status`] ?? this.status;
         this.is_able_to_track = message[`${prefix}is_able_to_track`] ?? this.is_able_to_track;
         this.hits_joint_limit = message[`${prefix}hits_joint_limit`] ?? this.hits_joint_limit;
@@ -72,7 +72,7 @@ class Robot {
             if (!this.arms[arm_index]) {
                 this.arms[arm_index] = new RobotArm();
             }
-            this.arms[arm_index].updateRobotArm(arm_index, message);
+            this.arms[arm_index].updateRobotArm(this.name, arm_index, message);
         }
     }
 }

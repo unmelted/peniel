@@ -1,13 +1,14 @@
 
 const { Robot, RobotArm, Connection } = require('../models/robotData');
 const {Configurator, MsgSender, TcpClient} = require("./tcpService");
-const sendToWeb = require('./webSocket');
+const {sendRobotData, sendEventLog, sendOtherData} = require('./webSocket');
 
 class DataProcessor {
-    constructor(tcpClient) {
+    constructor(tcpClient, wss) {
         this.robots = new Map(); // 로봇 데이터를 저장할 맵
         this.connection = new Connection();
         this.tcpClient = tcpClient;
+        this.wss = wss;
     }
     process(parsedMessage) {
         console.log('received Processing message:', parsedMessage);
@@ -17,11 +18,13 @@ class DataProcessor {
                 this.enableSocket(parsedMessage);
                 break;
 
-            case 'REPORT_SVC_INFO':
+            case 'SET_SVC_INFO':
                 const robot_data = JSON.parse(parsedMessage.Data);
-                const robot_name = parsedMessage.From;
+                const robot_name = this.getRobotName(parsedMessage);
                 const robot = this.robots.get(robot_name);
                 robot.updateRobotArms(robot_data);
+                parsedMessage.Type = "EVENT_INFO";
+
                 break;
 
             case 'REQUEST_INIT_INFO':
@@ -31,12 +34,13 @@ class DataProcessor {
             case 'REQUEST_INFO':
                 break;
 
-            case 'NOTIFY':
-            case 'EVENT_EMERGENCY':
             case 'WHOAMI':
+            case 'NOTIFY':
+            case 'REPORT_SVC_INFO':
+            case 'EVENT_EMERGENCY':
                 // bypass to web
-                parsedMessage.Type = "EVENT_LOG"
-                this.sendToFrontend(parsedMessage);
+                parsedMessage.Type = "EVENT_LOG";
+                sendEventLog(this.wss, parsedMessage);
                 break;
 
             default:
@@ -89,8 +93,29 @@ class DataProcessor {
 
         this.robots.set(from, robot);
     }
-    updateRobot(from, data) {
 
+    getRobotName(message) {
+        for (let key in message) {
+            if (key.startsWith('MC')) {
+                return 'MC';
+            }
+            else if (key.startsWith('SR1')) {
+                return 'SR1';
+            }
+            else if (key.startsWith('SR2')) {
+                return 'SR2';
+            }
+            else if (key.startsWith('SR3')) {
+                return 'SR3';
+            }
+            else if (key.startsWith('SR4')) {
+                return 'SR4';
+            }
+            else if (key.startsWith('CR')) {
+                return 'CR';
+            }
+        }
+        return null;
     }
 }
 
