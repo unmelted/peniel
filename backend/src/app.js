@@ -2,9 +2,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const {Configurator, MsgSender, TcpClient } = require('./service/tcpService');
-const DataProcessor = require('./service/dataProcessor');
 const { wss } = require('./service/websocket');
+const {TcpClient } = require('./service/tcpService');
+const DataProcessor = require('./service/dataProcessor');
 const robotRoutes = require('./routes/robotRoutes');
 const logRoutes = require('./routes/logRoutes');
 const notifyRoutes = require('./routes/notifyRoutes');

@@ -1,26 +1,65 @@
 const WebSocket = require('ws');
 
-const wss = new WebSocket.Server({ port:  process.env.WEBSOCKET_PORT });
+let wss;
 
-wss.on('connection', ws => {
-    console.log('WebSocket Client connected');
+function createWebSocketServer() {
+    if (wss) {
+        console.log('WebSocket server is already running.');
+        return wss;
+    }
 
-    ws.on('message', message => {
-        console.log('received:', message);
-        if (message === 'EVENT_INFO') {
-            sendRobotData(ws);
-        } else if (message === 'EVENT_LOG') {
-            sendEventLog(ws);
-        }
-        else if (message === 'EVENT_OTHER') {
-            sendOtherData(ws);
-        }
-    });
+    try {
+        const port = process.env.WEBSOCKET_PORT;
+        wss = new WebSocket.Server({ port });
+        console.log(`WebSocket server started on port ${port}.`);
 
-    ws.on('close', () => {
-        console.log('WebSocket Client disconnected');
-    });
-});
+        wss.on('connection', ws => {
+            console.log('WebSocket Client connected');
+
+            ws.on('message', message => {
+                console.log('received:', message);
+
+                try {
+                    const parsedMessage = JSON.parse(message);
+                    switch (parsedMessage.type) {
+                        case 'EVENT_INFO':
+                            sendRobotData(ws, parsedMessage.data);
+                            break;
+                        case 'EVENT_LOG':
+                            sendEventLog(ws, parsedMessage.data);
+                            break;
+                        case 'EVENT_OTHER':
+                            sendOtherData(ws, parsedMessage.data);
+                            break;
+                        default:
+                            console.log('Unknown message type:', parsedMessage.type);
+                    }
+                } catch (error) {
+                    console.error('Error processing message:', error);
+                }
+            });
+
+            ws.on('close', () => {
+                console.log('WebSocket Client disconnected');
+            });
+        });
+
+        wss.on('error', (error) => {
+            console.error('WebSocket server error:', error);
+            if (error.code === 'EADDRINUSE') {
+                console.error(`Port ${port} is already in use.`);
+            }
+        });
+
+        return wss;
+
+    } catch (error) {
+        console.error('Error starting WebSocket server:', error);
+    }
+}
+
+const server = createWebSocketServer();
+
 
 function sendRobotData(ws, robots) {
     const robotsObj = Object.fromEntries(robots);
@@ -40,7 +79,6 @@ function sendEventLog(ws, log) {
 }
 
 function sendOtherData(ws, otherData) {
-
     const jsonData = JSON.stringify({
         type: 'EVENT_OTHER',
         data: otherData
@@ -48,9 +86,8 @@ function sendOtherData(ws, otherData) {
     ws.send(jsonData);
 }
 
-
 module.exports = {
-    wss,
+    wss: server,
     sendRobotData,
     sendEventLog,
     sendOtherData

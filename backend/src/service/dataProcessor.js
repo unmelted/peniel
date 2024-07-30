@@ -19,11 +19,22 @@ class DataProcessor {
                 break;
 
             case 'SET_SVC_INFO':
-                const robot_data = JSON.parse(parsedMessage.Data);
-                const robot_name = this.getRobotName(parsedMessage);
-                const robot = this.robots.get(robot_name);
-                robot.updateRobotArms(robot_data);
-                parsedMessage.Type = "EVENT_INFO";
+                try {
+                    const robot_data = JSON.parse(parsedMessage.Data);
+                    const robot_name = this.getRobotName(parsedMessage);
+                    const robot = this.robots.get(robot_name);
+
+                    if (!robot) {
+                        // 로봇이 맵에 없으면 새로 생성
+                        robot = new Robot(robot_name);
+                        this.robots.set(robot_name, robot);
+                    }
+
+                    robot.updateRobotArms(robot_data);
+                    parsedMessage.Type = "EVENT_INFO";
+                } catch (error) {
+                    console.error('Error parsing robot data:', error);
+                }
 
                 break;
 
@@ -40,7 +51,8 @@ class DataProcessor {
             case 'EVENT_EMERGENCY':
                 // bypass to web
                 parsedMessage.Type = "EVENT_LOG";
-                sendEventLog(this.wss, parsedMessage);
+                this.broadcastEvent(parsedMessage);
+                // sendEventLog(this.wss, parsedMessage);
                 break;
 
             default:
@@ -116,6 +128,14 @@ class DataProcessor {
             }
         }
         return null;
+    }
+
+    broadcastEvent(message) {
+        this.wss.clients.forEach(client => {
+            if (client.readyState === client.OPEN) {
+                client.send(JSON.stringify(message));
+            }
+        });
     }
 }
 
