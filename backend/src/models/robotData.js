@@ -46,7 +46,7 @@ class RobotArm {
 }
 
 class Robot {
-    constructor(id, version) {
+    constructor(id, version ="abcde") {
         this.id = id;
         this.name = id.split("_")[0];
         this.version = version;
@@ -66,13 +66,22 @@ class Robot {
         return this.arms.length;
     }
 
+    addArmWithDefault(arm_count) {
+        for (let index = 0 ; index < arm_count ; index++) {
+            this.arms.push(new RobotArm);
+        }
+    }
+
     updateRobotArms(message) {
+        console.log("updateRobotArm is called : ", message, this.arms.length);
+
         for (let arm_index = 0; arm_index < this.arms.length; arm_index++) {
 
             if (!this.arms[arm_index]) {
                 this.arms[arm_index] = new RobotArm();
             }
             this.arms[arm_index].updateRobotArm(this.name, arm_index, message);
+            console.log("updateRobotArm : ", this.name, arm_index, this.arms[arm_index]);
         }
     }
 }

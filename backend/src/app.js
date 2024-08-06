@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { wss } = require('./service/websocket');
+const { createWebSocketServer } = require('./service/websocket');
 const {TcpClient } = require('./service/tcpService');
 const DataProcessor = require('./service/dataProcessor');
 const robotRoutes = require('./routes/robotRoutes');
@@ -27,7 +27,7 @@ const TCP_HOST = process.env.TCP_HOST;
 const TCP_PORT = process.env.TCP_PORT;
 
 const tcpClient = new TcpClient();
-const dataProcessor = new DataProcessor(tcpClient, wss);
+const dataProcessor = new DataProcessor(tcpClient, createWebSocketServer());
 
 tcpClient.connect(TCP_HOST, TCP_PORT, dataProcessor)
     .then(() => {

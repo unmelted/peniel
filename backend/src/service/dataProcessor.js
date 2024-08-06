@@ -21,15 +21,20 @@ class DataProcessor {
             case 'SET_SVC_INFO':
                 try {
                     const robot_data = JSON.parse(parsedMessage.Data);
-                    const robot_name = this.getRobotName(parsedMessage);
-                    const robot = this.robots.get(robot_name);
+                    const robot_name = this.getRobotName(robot_data);
+                    console.log("SET_SVC_INFO robot_name ", robot_name)
+
+                    let robot = this.robots.get(robot_name);
 
                     if (!robot) {
                         // 로봇이 맵에 없으면 새로 생성
                         robot = new Robot(robot_name);
                         this.robots.set(robot_name, robot);
+                        console.log("new Robot create");
                     }
 
+                    let arm_count = this.getRobotArmCount(robot_data);
+                    robot.addArmWithDefault(arm_count);
                     robot.updateRobotArms(robot_data);
                     parsedMessage.Type = "EVENT_INFO";
                 } catch (error) {
@@ -39,6 +44,7 @@ class DataProcessor {
                 break;
 
             case 'REQUEST_INIT_INFO':
+            case 'REQUEST_INIT_DONE':
                 this.addRobot(parsedMessage.From, parsedMessage.Data);
                 break;
 
@@ -128,6 +134,19 @@ class DataProcessor {
             }
         }
         return null;
+    }
+    getRobotArmCount(message) {
+        let maxInteger = -Infinity;
+        for (let key in message) {
+            let parts = key.split(':');
+            if (parts.length > 1) {
+                let number = parseInt(parts[1], 10);
+                if (!isNaN(number) && number > maxInteger) {
+                    maxInteger = number;
+                }
+            }
+        }
+        return maxInteger;
     }
 
     broadcastEvent(message) {

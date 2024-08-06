@@ -58,7 +58,7 @@ function createWebSocketServer() {
     }
 }
 
-const server = createWebSocketServer();
+// const server = createWebSocketServer();
 
 
 function sendRobotData(ws, robots) {
@@ -87,7 +87,7 @@ function sendOtherData(ws, otherData) {
 }
 
 module.exports = {
-    wss: server,
+    createWebSocketServer,
     sendRobotData,
     sendEventLog,
     sendOtherData
