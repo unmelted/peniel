@@ -37,6 +37,7 @@ class DataProcessor {
                     robot.addArmWithDefault(arm_count);
                     robot.updateRobotArms(robot_data);
                     parsedMessage.Type = "EVENT_INFO";
+                    this.broadcastEvent(parsedMessage);
                 } catch (error) {
                     console.error('Error parsing robot data:', error);
                 }
@@ -44,23 +45,26 @@ class DataProcessor {
                 break;
 
             case 'REQUEST_INIT_INFO':
-            case 'REQUEST_INIT_DONE':
-                this.addRobot(parsedMessage.From, parsedMessage.Data);
+                if (parsedMessage.Data != "")
+                {
+                    this.addRobot(parsedMessage.From, parsedMessage.Data);
+                    parsedMessage.Type = "EVENT_INFO";
+                    this.broadcastEvent(parsedMessage);
+                }
                 break;
 
             case 'REQUEST_INFO':
                 break;
 
-            case 'WHOAMI':
             case 'NOTIFY':
             case 'REPORT_SVC_INFO':
             case 'EVENT_EMERGENCY':
                 // bypass to web
                 parsedMessage.Type = "EVENT_LOG";
                 this.broadcastEvent(parsedMessage);
-                // sendEventLog(this.wss, parsedMessage);
                 break;
-
+            case 'REQUEST_INIT_DONE':
+                break;
             default:
                 console.log('uncategorized command:', parsedMessage.Type);
                 console.log('uncategorized command:', parsedMessage.Command);
@@ -150,6 +154,8 @@ class DataProcessor {
     }
 
     broadcastEvent(message) {
+        console.log("broadcastEvent will send message to websocket ", message.Type);
+        console.log('client count :', this.wss.clients.size);
         this.wss.clients.forEach(client => {
             if (client.readyState === client.OPEN) {
                 client.send(JSON.stringify(message));

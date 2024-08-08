@@ -79,7 +79,6 @@ class TcpClient {
                     this.isConnected = true;
                     this.retrying = false;
                     this.isTryingToConnect = false;
-                    console.log('isConnected :', this.isConnected);
 
                     if (this.retryTimeout) {
                         clearTimeout(this.retryTimeout);
@@ -164,7 +163,6 @@ class TcpClient {
             console.error('Connection is not established.');
             return;
         }
-        console.log('Sending raw data:', message);
         this.socket.write(message);
     }
 }

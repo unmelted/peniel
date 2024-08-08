@@ -4,8 +4,6 @@ import userRobot from '../../../assets/images/custom/user-robot.png';
 import userRobotX from '../../../assets/images/custom/user-robot-x.png';
 import LogTable, {EventLog} from './LogTable';
 
-import {ResponsiveDataTable} from "./LogTable.tsx";
-
 const Block: FC<RobotProps> = ({ name, status, section2Text, section3Text }) => {
     const bgColor = status === 'active' ? 'bg-green-500' : 'bg-gray-900';
     const textColor = status === 'active' ? 'text-white' : 'text-gray-400 dark:text-gray-500';

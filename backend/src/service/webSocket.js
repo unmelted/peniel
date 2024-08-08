@@ -15,6 +15,7 @@ function createWebSocketServer() {
 
         wss.on('connection', ws => {
             console.log('WebSocket Client connected');
+            console.log('client count :', wss.clients.size);
 
             ws.on('message', message => {
                 console.log('received:', message);
