@@ -31,16 +31,28 @@ export const EventLog = () => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:9080");
-        setSocket(ws);
+        console.log("Attempting to connect to WebSocket...");
+        if (!socket) {  // socket이 이미 설정되어 있다면 새로 설정하지 않음
+            const ws = new WebSocket("ws://localhost:19800");
+            setSocket(ws);
 
-        ws.onmessage = (event) => {
-            const log = JSON.parse(event.data);
-            addLog(log);
-        };
+            ws.onopen = () => {
+                console.log("WebSocket connection established.");
+            };
 
-        return () => ws.close();
-    }, [addLog]);
+            ws.onmessage = (event) => {
+                const log = JSON.parse(event.data);
+                console.log("onmessage log ", log);
+                addLog(log);
+            };
+
+            return () => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.close();
+                }
+            };
+        }
+    }, [socket, addLog]);
 
     const data = logs;
 

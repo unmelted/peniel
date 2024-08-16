@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from 'react';
 import { RobotProps } from './StarkData.tsx';
 import userRobot from '../../../assets/images/custom/user-robot.png';
 import userRobotX from '../../../assets/images/custom/user-robot-x.png';
-import LogTable, {EventLog} from './LogTable';
+import {EventLog} from './LogTable';
 
 const Block: FC<RobotProps> = ({ name, status, section2Text, section3Text }) => {
     const bgColor = status === 'active' ? 'bg-green-500' : 'bg-gray-900';
@@ -40,35 +40,6 @@ const Block: FC<RobotProps> = ({ name, status, section2Text, section3Text }) => 
 
 const RobotList: FC = () => {
     const [robots, setRobots] = useState<RobotProps[]>([]);
-    const [logs, setLogs] = useState([]);
-
-    useEffect(() => {
-        // 초기 데이터 가져오기
-        fetch('/api/getRobots')
-            .then(response => response.json())
-            .then(data => setRobots(data))
-            .catch(error => console.error('Error fetching robots:', error));
-
-        // 웹소켓 설정
-        const ws = new WebSocket('ws://localhost:3000');
-
-        ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (message.type === 'robot') {
-                setRobots(prevRobots => [...prevRobots, message.data]);
-            } else if (message.type === 'log') {
-                setLogs(prevLogs => [...prevLogs, message.data]);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log('WebSocket connection closed');
-        };
-
-        return () => {
-            ws.close();
-        };
-    }, []);
 
     return (
         <div className="grid grid-cols-12 gap-6">
